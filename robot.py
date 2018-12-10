@@ -16,9 +16,23 @@ class Robot(wpilib.IterativeRobot):
 	REAR_RIGHT_CHANNEL= 4
 
 	def robotInit(self):
-		
-		subsystems.init()
 
+		self.front_left_motor = ctre.WPI_TalonSRX(FRONT_LEFT_CHANNEL)
+		self.rear_left_motor = ctre.WPI_TalonSRX(REAR_LEFT_CHANNEL)
+		#left = wpilib.SpeedControllerGroup(self.left1, self.left2)
+
+		self.front_right_motor = ctre.WPI_TalonSRX(FRONT_RIGHT_CHANNEL)
+		self.rear_right_motor = ctre.WPI_TalonSRX(REAR_RIGHT_CHANNEL)
+		#right = wpilib.SpeedControllerGroup(self.right1, self.right2)
+
+		# may or may not need to invert
+		# self.front_left_motor.setInverted(True)
+		# #may need to change this
+		# self.rear_left_motor.setInverted(True)
+
+		self.drivetrain = Drivetrain(front_left, rear_left, front_right, rear_right)
+		
+		
 	def operatorControl(self):
 		self.drive.setSafetyEnabled(True)
 		while self.isOperatorCOntrol() and self.isEnabled():
