@@ -32,6 +32,7 @@ class Drivetrain:
 				0)
 
 			wpilib.Timer.delay(0.005) 
+
 	def stop(self):
-		self.robot_drive.stopMotor()
+		self.drive.stopMotor()
 		
