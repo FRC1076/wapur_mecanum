@@ -30,7 +30,7 @@ class Robot(wpilib.IterativeRobot):
 		# #may need to change this
 		# self.rear_left_motor.setInverted(True)
 
-		self.drivetrain = Drivetrain(self.front_left, self.rear_left, self.front_right, self.rear_right)
+		self.drivetrain = Drivetrain(self.front_left_motor, self.rear_left_motor, self.front_right_motor, self.rear_right_motor)
 		
 		
 	def operatorControl(self):

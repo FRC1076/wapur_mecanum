@@ -24,7 +24,7 @@ class Drivetrain:
 
 	def operatorControl(self):
 		self.drive.setSafetyEnabled(True)
-		while self.isOperatorCOntrol() and self.isEnabled():
+		while self.isOperatorControl() and self.isEnabled():
 			self.drive.driveCartesian(
 				self.driver.getX(),
 				self.driver.getY(),
