@@ -1,6 +1,6 @@
 import wpilib 
 
-class Grabber: 
+class Catcher: 
 	""" 
 	Grabber catches the ball and has a mechanism to release ball 
 	with pneumatics.
