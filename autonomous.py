@@ -1,17 +1,22 @@
 import math
 import time 
-from enum import enum 
 import wpilib
 
 
-class ArcadeAutonomous(BaseAutonomous):
+def straight_ahead(drivetrain):
+	yield from Timed(MecanumAutonomous(drivetrain), duration = 5).run()
+	
+class MecanumAutonomous(BaseAutonomous):
 	def __init__(self, drivetrain)
 		self.drivetrain = drivetrain
+
 	def execute(self):
 		while True:
 			self.drivetrain.MecanumDrive(self.forward)
+			yield
 
-
+	def end(self):
+		self.drivetrain.stop()
 
 
 class BaseAutonomous:
