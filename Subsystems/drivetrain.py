@@ -1,12 +1,16 @@
 import wpilib
-import wpilib.drive
-from wpilib import DoubleSolenoid
+import ctre
+from wpilib.command.subsystem import Subsystem
+from robotmap import channels
+
+from wpilib.drive import MecanumDrive
+
 
 class Drivetrain:
 
 	def __init__(self, front_left, rear_left, front_right, rear_right)
 
-		self.drive = MecanumDrive(
+		self.drive = wpilib.drive.MecanumDrive(
 			front_left, 
 			rear_left, 
 			front_right, 
@@ -17,10 +21,17 @@ class Drivetrain:
 		self.drive.setExpiration(0.1)
 
 		self.driver = wpilib.XboxController(0)
-		#self.operator = wpilib.XboxController(1)
+		self.operator = wpilib.XboxController(1)
 
 		#what does this do?
 		self.auto_exec = iter([])
+
+
+	def drive_Cartesian(self, ySpeed, xSpeed, zRotation, gyroAngle = 0.0):
+		self.drive.driveCartesian(ySpeed, xSpeed, zRotation, gyroAngle)
+
+	def set(self, ySpeed, xSpeed, zRotation, gyroAngle):
+		self.drive.driveCartesian(ySpeed, xSpeed, zRotation, gyroAngle)
 
 	def operatorControl(self):
 		self.drive.setSafetyEnabled(True)
