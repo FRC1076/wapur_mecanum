@@ -73,21 +73,22 @@ class Robot(wpilib.IterativeRobot):
 		else: 
 			self.forward += max_acceleration * sign(delta)
 
+		if self.driver.getXButton():
+			self.drivetrain.stop()
+		else:
+			self.drivetrain.drive_Cartesian(self.ySpeed, self.xSpeed, self.zRotation, gyroAngle = 0.0)
 
-		# if self.driver.getXButton():
-		# 	self.drivetrain.stop()
-		# else
-		# 	self.drivetrain.
 
 	def autonomousInit(self):
-		print("AUTONOMOUS BEGIN")
+		print("AUTONOMOUS BEGIN!")
 
-		self.auton = autonomous.straight(
+		self.auton = autonomous.MecanumAutonomous(
 			self.drivetrain)
 
 	def autonomousPeriodic(self):
 		try:
 			next(self.auton)
+			print("We are at autonomous periodic")
 		except StopIteration:
 			self.drivetrain.stop()
 
@@ -95,7 +96,6 @@ def deadzone(val, deadzone):
 	if abs(val) < deadzone:
 		return 0
 	return val
-
 
 
 if _name_ == "__main__":
