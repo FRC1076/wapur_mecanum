@@ -1,11 +1,16 @@
 import wpilib 
+import ctre
 from wpilib.drive import MecanumDrive
 import autonomous
+from subsystems.grabber import Grabber
+from subsystems.elevator import Elevator
 
 LEFT = GenericHID.Hand.kLeft
 RIGHT = GenericHID.Hand.kRight
 
-
+GRABBER_ID = 1
+ELEVATOR1_ID = 1
+ELEVATOR2_ID = 1
 
 class Robot(wpilib.IterativeRobot):
 
@@ -32,6 +37,14 @@ class Robot(wpilib.IterativeRobot):
 
 		self.drivetrain = Drivetrain(self.front_left_motor, self.rear_left_motor, self.front_right_motor, self.rear_right_motor)
 		
+		
+		self.grabber = Grabber(ctre.WPI_TalonSRX(GRABBER_ID)) 
+
+		
+		elevator1 = ctre.WPI_TalonSRX(ELEVATOR1_ID)
+		elevator2 = ctre.WPI_TalonSRX(ELEVATOR2_ID)
+		self.elevator = Elevator(
+			wpilib.SpeedControllerGroup(elevator1, elevator2))
 		
 	def operatorControl(self):
 		self.drive.setSafetyEnabled(True)
@@ -82,7 +95,7 @@ class Robot(wpilib.IterativeRobot):
 	def autonomousInit(self):
 		print("AUTONOMOUS BEGIN!")
 
-		self.auton = autonomous.MecanumAutonomous(
+		self.auton = autonomous.straight_ahead(
 			self.drivetrain)
 
 	def autonomousPeriodic(self):
