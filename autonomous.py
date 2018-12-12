@@ -8,7 +8,7 @@ def straight_ahead(drivetrain):
 	
 class MecanumAutonomous(BaseAutonomous):
 	def __init__(self, drivetrain)
-		self.drivetrain = drivetrain
+        self.drivetrain = drivetrain
 
 	def execute(self):
 		while True:

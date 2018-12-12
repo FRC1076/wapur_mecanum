@@ -7,7 +7,6 @@ from wpilib.drive import MecanumDrive
 
 
 class Drivetrain:
-
 	def __init__(self, front_left, rear_left, front_right, rear_right)
 
 		self.drive = wpilib.drive.MecanumDrive(

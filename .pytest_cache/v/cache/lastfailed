@@ -1,0 +1,5 @@
+{
+  "tests/catcher_test.py": true,
+  "tests/drivetrain_test.py": true,
+  "tests/elevator_test.py": true
+}
