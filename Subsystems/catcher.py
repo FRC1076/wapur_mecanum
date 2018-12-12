@@ -1,18 +1,22 @@
 import wpilib 
 
-class Catcher: 
+class Grabber: 
 	""" 
 	Grabber catches the ball and has a mechanism to release ball 
-	with pneumatics.
+
 	"""
-	def __init__(self, motor):
-		self.motor = motor
+	def __init__(self, left, right):
+		self.left_motor = left
+		self.right_motor = right
 
-	def eject(self, speed = 1.0):
-		self.motor.set(speed)
+	def set(self, speed=1.0):
+        self.set_left(speed)
+        self.set_right(speed)
 
-	def reset(self, speed = -1.0):
-		self.motor.set(speed)
+    def set_left(self, speed=1.0):
+        self.left_motor.set(-speed)
 
-	def stop(self):
-		self.motor.set(0)
+    def set_right(self, speed=1.0):
+        self.right_motor.set(-speed)
+
+  
