@@ -1,3 +1,6 @@
+import sys 
+sys.path.append("C:/Users/biaoh/Desktop/1076 Software/wapur_mecanum/wapur_mecanum")
+
 import wpilib
 from subsystems.drivetrain import Drivetrain 
 
