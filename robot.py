@@ -49,11 +49,8 @@ class Robot(wpilib.IterativeRobot):
 		elevator2 = ctre.WPI_TalonSRX(ELEVATOR2_ID)
 		self.elevator = Elevator(wpilib.SpeedControllerGroup(elevator1, elevator2))
 
-		
-		elevator1 = ctre.WPI_TalonSRX(ELEVATOR1_ID)
-		elevator2 = ctre.WPI_TalonSRX(ELEVATOR2_ID)
-		self.elevator = Elevator(
-			wpilib.SpeedControllerGroup(elevator1, elevator2))
+		grabber = ctre.WPI_TalonSRX(GRABBER_ID)
+		self.grabber = Grabber(wpilib.SpeedControllerGroup(grabber))
 		
 	def operatorControl(self):
 		self.drive.setSafetyEnabled(True)
@@ -87,48 +84,48 @@ class Robot(wpilib.IterativeRobot):
 
 		max_ySpeed = 1.0
 		max_xSpeed = 1.0
+		max_rotSpeed = 1.0
 
-		yForward = deadzone(yForward * max_ySpeed, deadzone)
-		xDistance = deadzone(xDistance * max_xSpeed, deadzone)
+		ySpeed = deadzone(ySpeed * max_ySpeed, deadzone)
+		xSpeed = deadzone(xSpeed * max_xSpeed, deadzone)
+		zRotation = deadzone(zRotation * max_rotSpeed, deadzone)
 
-		delta = yForward - self.yDist
+		# delta = yForward - self.yDist
 
-		if abs(delta) < max_acceleration:
-			self.yDist += delta
-		else: 
-			self.yDist += max_acceleration * sign(delta)
+		# if abs(delta) < max_acceleration:
+		# 	self.yDist += delta
+		# else: 
+		# 	self.yDist += max_acceleration * sign(delta)
 
 		# operator controls
-		elevatorZ = self.operator.getTriggerAxis(RIGHT)
-		spit = self.operator.getTriggerAxis(LEFT)
+		elevatorUp = self.operator.getTriggerAxis(RIGHT)
+		elevatorDn = self.operator.getTriggerAxis(LEFT)
 
 		TRIGGER_LEVEL = 0.35
 
-		if abs(elevatorZ) > TRIGGER_LEVEL:
-			self.elevator.go_up(elevatorZ)
-		elif abs(spit) > TRIGGER_LEVEL:
-			self.elevator.go_down(spit)
+		if abs(elevatorUp) > TRIGGER_LEVEL:
+			self.elevator.go_up(elevatorUp)
+		elif abs(elevatorDn) > TRIGGER_LEVEL:
+			self.elevator.go_down(elevatorDn)
 		else: 
 			self.elevator.stop()
 
-		#intake
-		left_stick = -deadzone(self.operator.getY(LEFT), INTAKE_DEADZONE)
-        right_stick = -deadzone(self.operator.getY(RIGHT), INTAKE_DEADZONE)
-        self.grabber.set_left(left_stick * 0.5)
-        self.grabber.set_right(right_stick * 0.5)
+		#intake, negative is reversing direction
+		
+        intake_stick = -deadzone(self.operator.getY(RIGHT), INTAKE_DEADZONE)
+        
+        self.grabber.setSpeed(intake_stick * 0.5)
 
-	
 		if self.driver.getXButton():
 			self.drivetrain.stop()
 		else:
-			self.drivetrain.drive_Cartesian(ySpeed, xSpeed, zRotation, gyroAngle = 0.0)
+			self.drivetrain.drive_Cartesian(ySpeed, xSpeed, zRotation)
 
 
 	def autonomousInit(self):
 		print("AUTONOMOUS BEGIN!")
 
-		self.auton = autonomous.straight_ahead(
-			self.drivetrain)
+		self.auton = autonomous.straight_ahead(self.drivetrain)
 
 	def autonomousPeriodic(self):
 		try:
