@@ -20,5 +20,6 @@ def test_forward():
 		rear_right_motor
 		)
 
-	drivetrain.Cartesian_Drive(1.0, 1.0, 90, gyroAngle = 0.0)
-	assert left
+	drivetrain.Cartesian_Drive(1.0, 0, 90, gyroAngle = 0.0)
+	assert ySpeed == 1
+	assert xSpeed

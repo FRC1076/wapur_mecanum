@@ -1,5 +1,6 @@
 import wpilib 
 import ctre
+import robotpy_ext.common_drivers.navx as navx
 from wpilib.drive import MecanumDrive
 import autonomous
 from subsystems.grabber import Grabber
@@ -9,6 +10,7 @@ LEFT = GenericHID.Hand.kLeft
 RIGHT = GenericHID.Hand.kRight
 
 GRABBER_ID = 1
+
 ELEVATOR1_ID = 1
 ELEVATOR2_ID = 1
 
@@ -34,11 +36,18 @@ class Robot(wpilib.IterativeRobot):
 		# self.front_left_motor.setInverted(True)
 		# #may need to change this
 		# self.rear_left_motor.setInverted(True)
+		self.gyro = navx.ahrs.AHRS.create_spi()
 
 		self.drivetrain = Drivetrain(self.front_left_motor, self.rear_left_motor, self.front_right_motor, self.rear_right_motor)
 		
-		
+		self.driver = wpilib.XboxController(0)
+        self.operator = wpilib.XboxController(1)
+
 		self.grabber = Grabber(ctre.WPI_TalonSRX(GRABBER_ID)) 
+
+		elevator1 = ctre.WPI_TalonSRX(ELEVATOR1_ID)
+		elevator2 = ctre.WPI_TalonSRX(ELEVATOR2_ID)
+		self.elevator = Elevator(wpilib.SpeedControllerGroup(elevator1, elevator2))
 
 		
 		elevator1 = ctre.WPI_TalonSRX(ELEVATOR1_ID)
@@ -48,7 +57,7 @@ class Robot(wpilib.IterativeRobot):
 		
 	def operatorControl(self):
 		self.drive.setSafetyEnabled(True)
-		while self.isOperatorCOntrol() and self.isEnabled():
+		while self.isOperatorControl() and self.isEnabled():
 			self.drive.driveCartesian(
 				self.driver.getX(),
 				self.driver.getY(),
@@ -65,31 +74,54 @@ class Robot(wpilib.IterativeRobot):
 		self.left_activated = False
 		self.right_activated = False
 		print ("TELEOP BEGIN")
-		self.forward = 0
+		self.yDist = 0
 
 	def teleopPeriodic(self):
 		deadzone = 0.2
 		max_acceleration = 0.3
-		goal_forward = -self.driver.getY(RIGHT)
-		rotate = self.driver.getX(LEFT)
+		# driver controls
+		ySpeed = self.driver.getY(RIGHT)
+		xSpeed = self.driver.getX(RIGHT)
 
-		max_forward = 1.0
-		max_rotate = 1.0
+		zRotation = self.driver.getX(LEFT)
 
-		goal_forward = deadzone(goal_forward * max_forward, deadzone)
-		rotate = deadzone(rotate * max_rotate, deadzone)
+		max_ySpeed = 1.0
+		max_xSpeed = 1.0
 
-		alpha = goal_forward - self.forward
+		yForward = deadzone(yForward * max_ySpeed, deadzone)
+		xDistance = deadzone(xDistance * max_xSpeed, deadzone)
 
-		if abs(alpha) < max_acceleration:
-			self.forward += alpha
+		delta = yForward - self.yDist
+
+		if abs(delta) < max_acceleration:
+			self.yDist += delta
 		else: 
-			self.forward += max_acceleration * sign(delta)
+			self.yDist += max_acceleration * sign(delta)
 
+		# operator controls
+		elevatorZ = self.operator.getTriggerAxis(RIGHT)
+		spit = self.operator.getTriggerAxis(LEFT)
+
+		TRIGGER_LEVEL = 0.35
+
+		if abs(elevatorZ) > TRIGGER_LEVEL:
+			self.elevator.go_up(elevatorZ)
+		elif abs(spit) > TRIGGER_LEVEL:
+			self.elevator.go_down(spit)
+		else: 
+			self.elevator.stop()
+
+		#intake
+		left_stick = -deadzone(self.operator.getY(LEFT), INTAKE_DEADZONE)
+        right_stick = -deadzone(self.operator.getY(RIGHT), INTAKE_DEADZONE)
+        self.grabber.set_left(left_stick * 0.5)
+        self.grabber.set_right(right_stick * 0.5)
+
+	
 		if self.driver.getXButton():
 			self.drivetrain.stop()
 		else:
-			self.drivetrain.drive_Cartesian(self.ySpeed, self.xSpeed, self.zRotation, gyroAngle = 0.0)
+			self.drivetrain.drive_Cartesian(ySpeed, xSpeed, zRotation, gyroAngle = 0.0)
 
 
 	def autonomousInit(self):

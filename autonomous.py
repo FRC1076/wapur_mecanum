@@ -12,7 +12,7 @@ class MecanumAutonomous(BaseAutonomous):
 
 	def execute(self):
 		while True:
-			self.drivetrain.MecanumDrive(self.forward)
+			self.drivetrain.driveCartesian(1, 0, 0)
 			yield
 
 	def end(self):
