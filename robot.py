@@ -1,9 +1,11 @@
-import wpilib 
+import wpilib
 import ctre
 from wpilib.drive import MecanumDrive
 import autonomous
-from subsystems.grabber import Grabber
+from subsystems.catcher import Grabber
+from wpilib.interfaces import GenericHID
 from subsystems.elevator import Elevator
+from subsystems.drivetrain import Drivetrain
 
 LEFT = GenericHID.Hand.kLeft
 RIGHT = GenericHID.Hand.kRight
@@ -14,20 +16,18 @@ ELEVATOR2_ID = 1
 
 class Robot(wpilib.IterativeRobot):
 
-	#channels on the roborio that the motor controllers are plugged into
-	FRONT_LEFT_CHANNEL = 1
-	REAR_LEFT_CHANNEL = 2
-	FRONT_RIGHT_CHANNEL = 3
-	REAR_RIGHT_CHANNEL= 4
-
 	def robotInit(self):
+		self.FRONT_LEFT_CHANNEL = 4
+		self.REAR_LEFT_CHANNEL = 5
+		self.FRONT_RIGHT_CHANNEL = 6
+		self.REAR_RIGHT_CHANNEL = 7
 
-		self.front_left_motor = ctre.WPI_TalonSRX(FRONT_LEFT_CHANNEL)
-		self.rear_left_motor = ctre.WPI_TalonSRX(REAR_LEFT_CHANNEL)
+		self.front_left_motor = ctre.WPI_TalonSRX(self.FRONT_LEFT_CHANNEL)
+		self.rear_left_motor = ctre.WPI_TalonSRX(self.REAR_LEFT_CHANNEL)
 		#left = wpilib.SpeedControllerGroup(self.left1, self.left2)
 
-		self.front_right_motor = ctre.WPI_TalonSRX(FRONT_RIGHT_CHANNEL)
-		self.rear_right_motor = ctre.WPI_TalonSRX(REAR_RIGHT_CHANNEL)
+		self.front_right_motor = ctre.WPI_TalonSRX(self.FRONT_RIGHT_CHANNEL)
+		self.rear_right_motor = ctre.WPI_TalonSRX(self.REAR_RIGHT_CHANNEL)
 		#right = wpilib.SpeedControllerGroup(self.right1, self.right2)
 
 		# may or may not need to invert
@@ -36,30 +36,30 @@ class Robot(wpilib.IterativeRobot):
 		# self.rear_left_motor.setInverted(True)
 
 		self.drivetrain = Drivetrain(self.front_left_motor, self.rear_left_motor, self.front_right_motor, self.rear_right_motor)
-		
-		
-		self.grabber = Grabber(ctre.WPI_TalonSRX(GRABBER_ID)) 
 
-		
+
+		self.grabber = Grabber(ctre.WPI_TalonSRX(GRABBER_ID))
+
+
 		elevator1 = ctre.WPI_TalonSRX(ELEVATOR1_ID)
 		elevator2 = ctre.WPI_TalonSRX(ELEVATOR2_ID)
 		self.elevator = Elevator(
 			wpilib.SpeedControllerGroup(elevator1, elevator2))
-		
+
 	def operatorControl(self):
 		self.drive.setSafetyEnabled(True)
-		while self.isOperatorCOntrol() and self.isEnabled():
+		while self.isOperatorControl() and self.isEnabled():
 			self.drive.driveCartesian(
-				self.driver.getX(),
-				self.driver.getY(),
-				self.driver.getZ(), 
+				self.drivetrain.driver.getX(),
+				self.drivetrain.driver.getY(),
+				self.drivetrain.driver.getZ(),
 				0)
 
-			wpilib.Timer.delay(0.005) 
+			wpilib.Timer.delay(0.005)
 
 
-	def robotPeriodic(self):
-		print("Test")
+	# def robotPeriodic(self):
+	# 	print("Test")
 
 	def teleopInit(self):
 		self.left_activated = False
@@ -68,28 +68,28 @@ class Robot(wpilib.IterativeRobot):
 		self.forward = 0
 
 	def teleopPeriodic(self):
-		deadzone = 0.2
+		deadzone_value = 0.2
 		max_acceleration = 0.3
-		goal_forward = -self.driver.getY(RIGHT)
-		rotate = self.driver.getX(LEFT)
+		goal_forward = -self.drivetrain.driver.getY(RIGHT)
+		goal_sideways = self.drivetrain.driver.getX(LEFT)
 
 		max_forward = 1.0
-		max_rotate = 1.0
+		max_sideways = 1.0
 
-		goal_forward = deadzone(goal_forward * max_forward, deadzone)
-		rotate = deadzone(rotate * max_rotate, deadzone)
+		goal_forward = deadzone(goal_forward * max_forward, deadzone_value)
+		goal_sideways = deadzone(goal_sideways * max_sideways, deadzone_value)
 
 		alpha = goal_forward - self.forward
 
 		if abs(alpha) < max_acceleration:
 			self.forward += alpha
-		else: 
-			self.forward += max_acceleration * sign(delta)
+		else:
+			self.forward += max_acceleration # * sign(delta)
 
-		if self.driver.getXButton():
+		if self.drivetrain.driver.getXButton():
 			self.drivetrain.stop()
 		else:
-			self.drivetrain.drive_Cartesian(self.ySpeed, self.xSpeed, self.zRotation, gyroAngle = 0.0)
+			self.drivetrain.drive_Cartesian(self.forward, goal_sideways, 0)
 
 
 	def autonomousInit(self):
@@ -111,7 +111,5 @@ def deadzone(val, deadzone):
 	return val
 
 
-if _name_ == "__main__":
+if __name__ == "__main__":
 	wpilib.run(Robot, physics_enabled = True)
-
-

@@ -1,18 +1,18 @@
 import wpilib
 import ctre
 from wpilib.command.subsystem import Subsystem
-from robotmap import channels
-
+# from robotmap import channels
+from subsystems.catcher import Grabber
 from wpilib.drive import MecanumDrive
 
 
 class Drivetrain:
-	def __init__(self, front_left, rear_left, front_right, rear_right)
+	def __init__(self, front_left, rear_left, front_right, rear_right):
 
 		self.drive = wpilib.drive.MecanumDrive(
-			front_left, 
-			rear_left, 
-			front_right, 
+			front_left,
+			rear_left,
+			front_right,
 			rear_right,
 			)
 
@@ -38,11 +38,10 @@ class Drivetrain:
 			self.drive.driveCartesian(
 				self.driver.getX(),
 				self.driver.getY(),
-				self.driver.getZ(), 
+				self.driver.getZ(),
 				0)
 
-			wpilib.Timer.delay(0.005) 
+			wpilib.Timer.delay(0.005)
 
 	def stop(self):
 		self.drive.stopMotor()
-		
