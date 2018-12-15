@@ -2,7 +2,6 @@ import wpilib
 import ctre
 from wpilib.command.subsystem import Subsystem
 # from robotmap import channels
-from subsystems.catcher import Grabber
 from wpilib.drive import MecanumDrive
 
 
@@ -19,12 +18,8 @@ class Drivetrain:
 		#what does this do?
 		self.drive.setExpiration(0.1)
 
-		self.driver = wpilib.XboxController(0)
-		self.operator = wpilib.XboxController(1)
-
 		#what does this do?
 		self.auto_exec = iter([])
-
 
 	def drive_Cartesian(self, ySpeed, xSpeed, zRotation, gyroAngle = 0.0):
 		self.drive.driveCartesian(ySpeed, xSpeed, zRotation, gyroAngle)
