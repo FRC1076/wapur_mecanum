@@ -2,10 +2,6 @@ import json
 import udp_channels as udp
 from Line import get_line
 
-LOCALIP = "localhost"
-LOCALPORT = 8877
-REMOTEPORT = 8877
-REMOTEIP = "localhost"
 
 
 def cart_to_neo(location):
@@ -26,17 +22,13 @@ def cart_to_neo(location):
 
 
 class JoyLights:
-    def __init__(self, ard_addr, joystick):
+    def __init__(self, local_addr, local_port, remote_addr, remote_port):
         # create a socket to send to the arduion
         # initialize a counter to 0
         self.counter = 0
 
-        self.sender = udp.UDPChannel()
-        self.receiver = udp.UDPChannel(
-            local_ip=LOCALIP,
-            local_port=LOCALPORT,
-            remote_port=REMOTEPORT,
-            remote_ip=REMOTEIP)
+        self.sender = udp.UDPChannel(local_addr, local_port, remote_addr, remote_port)
+        
 
     def update_lights(self, x, y):
         # everth 10th that this is called. do this:

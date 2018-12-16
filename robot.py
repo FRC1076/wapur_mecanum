@@ -7,6 +7,7 @@ from wpilib.interfaces import GenericHID
 from subsystems.grabber import Grabber
 from subsystems.elevator import Elevator
 from subsystems.drivetrain import Drivetrain
+# from lights.JoyLights import JoyLights 
 
 LEFT = GenericHID.Hand.kLeft
 RIGHT = GenericHID.Hand.kRight
@@ -50,7 +51,11 @@ class Robot(wpilib.IterativeRobot):
 
 		grabber = ctre.WPI_TalonSRX(GRABBER_ID)
 		self.grabber = Grabber(wpilib.SpeedControllerGroup(grabber))
-
+		
+		
+		#create the front end for the arduino light controller
+		#self.lights = JoyLights('10.10.76.2', 8777, "10.10.76.7", 8777)
+	
 	def operatorControl(self):
 		self.drive.setSafetyEnabled(True)
 		while self.isOperatorControl() and self.isEnabled():
@@ -79,8 +84,8 @@ class Robot(wpilib.IterativeRobot):
 		deadzone_value = 0.2
 		max_acceleration = 0.3
 		# driver controls
-		ySpeed = self.driver.getY(RIGHT)
-		xSpeed = self.driver.getX(RIGHT)
+		ySpeed_raw = self.driver.getY(RIGHT)
+		xSpeed_raw = self.driver.getX(RIGHT)
 
 		zRotation = self.driver.getX(LEFT)
 
@@ -88,8 +93,8 @@ class Robot(wpilib.IterativeRobot):
 		max_xSpeed = 1.0
 		max_rotSpeed = 1.0
 
-		ySpeed = deadzone(ySpeed * max_ySpeed, deadzone_value)
-		xSpeed = deadzone(xSpeed * max_xSpeed, deadzone_value)
+		ySpeed = deadzone(ySpeed_raw * max_ySpeed, deadzone_value)
+		xSpeed = deadzone(xSpeed_raw * max_xSpeed, deadzone_value)
 		zRotation = deadzone(zRotation * max_rotSpeed, deadzone_value)
 
 		# delta = yForward - self.yDist
@@ -123,6 +128,8 @@ class Robot(wpilib.IterativeRobot):
 		else:
 			self.drivetrain.drive_Cartesian(ySpeed, xSpeed, zRotation)
 
+		#tell the lights to update
+	#	self.lights.update_lights(xSpeed_raw, ySpeed_raw) 
 
 	def autonomousInit(self):
 		print("AUTONOMOUS BEGIN!")
