@@ -64,8 +64,11 @@ class Robot(wpilib.IterativeRobot):
 
 
 	def robotPeriodic(self):
-		return
+		if self.timer % 1000 == 0:
+			print("robot is currently working rn")
+		self.timer += 1
 
+		
 	def teleopInit(self):
 		self.left_activated = False
 		self.right_activated = False

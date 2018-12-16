@@ -4,7 +4,7 @@ import wpilib
 
 
 def straight_ahead(drivetrain):
-	yield from Timed(MecanumAutonomous(drivetrain), duration = 5).run()
+	yield from Timed(MecanumAutonomous(drivetrain), duration = 3).run()
 
 
 class BaseAutonomous:
