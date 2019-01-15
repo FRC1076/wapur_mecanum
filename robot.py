@@ -1,12 +1,12 @@
 import wpilib
 import ctre
-import robotpy_ext.common_drivers.navx as navx
+#import robotpy_ext.common_drivers.navx as navx
 from wpilib.drive import MecanumDrive
 import autonomous
 from wpilib.interfaces import GenericHID
-from subsystems.grabber import Grabber
-from subsystems.elevator import Elevator
-from subsystems.drivetrain import Drivetrain
+from Subsystems.grabber import Grabber
+from Subsystems.elevator import Elevator
+from Subsystems.drivetrain import Drivetrain
 
 LEFT = GenericHID.Hand.kLeft
 RIGHT = GenericHID.Hand.kRight
@@ -16,7 +16,7 @@ GRABBER_ID = 1
 ELEVATOR1_ID = 1
 ELEVATOR2_ID = 1
 
-class Robot(wpilib.IterativeRobot):
+class Robot(wpilib.TimedRobot):
 
 	def robotInit(self):
 
@@ -24,6 +24,8 @@ class Robot(wpilib.IterativeRobot):
 		self.REAR_LEFT_CHANNEL = 5
 		self.FRONT_RIGHT_CHANNEL = 6
 		self.REAR_RIGHT_CHANNEL = 7
+
+		self.timer = 0
 
 		self.front_left_motor = ctre.WPI_TalonSRX(self.FRONT_LEFT_CHANNEL)
 		self.rear_left_motor = ctre.WPI_TalonSRX(self.REAR_LEFT_CHANNEL)
@@ -35,7 +37,7 @@ class Robot(wpilib.IterativeRobot):
 		# self.front_left_motor.setInverted(True)
 		# #may need to change this
 		# self.rear_left_motor.setInverted(True)
-		self.gyro = navx.ahrs.AHRS.create_spi()
+		#self.gyro = navx.ahrs.AHRS.create_spi()
 
 		self.drivetrain = Drivetrain(self.front_left_motor, self.rear_left_motor, self.front_right_motor, self.rear_right_motor)
 
@@ -72,6 +74,7 @@ class Robot(wpilib.IterativeRobot):
 	def teleopInit(self):
 		self.left_activated = False
 		self.right_activated = False
+
 		print ("TELEOP BEGIN")
 		self.yDist = 0
 
@@ -116,7 +119,7 @@ class Robot(wpilib.IterativeRobot):
 
 		intake_stick = -deadzone(self.operator.getY(RIGHT), deadzone_value)
 
-		self.grabber.setSpeed(intake_stick * 0.5)
+		self.grabber.set_motor(intake_stick * 0.5)
 
 		if self.driver.getXButton():
 			self.drivetrain.stop()
@@ -136,10 +139,20 @@ class Robot(wpilib.IterativeRobot):
 		except StopIteration:
 			self.drivetrain.stop()
 
-def deadzone(val, deadzone):
-	if abs(val) < deadzone:
-		return 0
-	return val
+def deadzone(value, percentage):
+     if value < 0:
+         signum = -1
+     else:
+         signum = 1
+     if abs(value) < percentage:
+         return 0
+     else:
+         # shift the value to move the theshold value to 0
+         shifted_value = value - (signum * percentage)
+         # scale the value so it fills the interval between
+         # the threshold and 1 or -1
+         shift_and_scaled = shifted_value / ( 1 - percentage )
+         return shift_and_scaled
 
 
 if __name__ == "__main__":
