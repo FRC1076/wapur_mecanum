@@ -1,12 +1,15 @@
 import wpilib
 import ctre
-#import robotpy_ext.common_drivers.navx as navx
+import math
+import navx
 from wpilib.drive import MecanumDrive
 import autonomous
 from wpilib.interfaces import GenericHID
 from Subsystems.grabber import Grabber
 from Subsystems.elevator import Elevator
 from Subsystems.drivetrain import Drivetrain
+import logging
+
 
 LEFT = GenericHID.Hand.kLeft
 RIGHT = GenericHID.Hand.kRight
@@ -19,6 +22,12 @@ ELEVATOR2_ID = 1
 class Robot(wpilib.TimedRobot):
 
 	def robotInit(self):
+
+		self.logger = logging.getLogger("robotpy")
+		self.logger.setLevel(logging.DEBUG)
+		fh = logging.FileHandler("robot.log")
+		fh.setLevel(logging.DEBUG)
+		self.logger.addHandler(fh)
 
 		self.FRONT_LEFT_CHANNEL = 4
 		self.REAR_LEFT_CHANNEL = 5
@@ -82,19 +91,20 @@ class Robot(wpilib.TimedRobot):
 		deadzone_value = 0.2
 		max_acceleration = 0.3
 		# driver controls
-		ySpeed = self.driver.getY(RIGHT)
-		xSpeed = self.driver.getX(RIGHT)
+		ySpeed = self.driver.getY(LEFT)
+		xSpeed = self.driver.getX(LEFT)
 
 		zRotation = self.driver.getX(LEFT)
 
 		max_ySpeed = 1.0
 		max_xSpeed = 1.0
 		max_rotSpeed = 1.0
-
-		ySpeed = deadzone(ySpeed * max_ySpeed, deadzone_value)
-		xSpeed = deadzone(xSpeed * max_xSpeed, deadzone_value)
-		zRotation = deadzone(zRotation * max_rotSpeed, deadzone_value)
-
+		if (xSpeed,ySpeed) != (0,0):
+			self.logger.debug("joystick before x %f y %f", xSpeed, ySpeed, exc_info=1)
+		(xSpeed, ySpeed) = deadzone(deadzone_value,(xSpeed, ySpeed))
+		zRotation = 0
+		if (xSpeed,ySpeed) != (0,0):
+			self.logger.debug("joystick deadzone After x %f y %f", xSpeed, ySpeed, exc_info=1)
 		# delta = yForward - self.yDist
 
 		# if abs(delta) < max_acceleration:
@@ -117,7 +127,7 @@ class Robot(wpilib.TimedRobot):
 
 		#intake, negative is reversing direction
 
-		intake_stick = -deadzone(self.operator.getY(RIGHT), deadzone_value)
+		intake_stick = 0
 
 		self.grabber.set_motor(intake_stick * 0.5)
 
@@ -139,21 +149,51 @@ class Robot(wpilib.TimedRobot):
 		except StopIteration:
 			self.drivetrain.stop()
 
-def deadzone(value, percentage):
-     if value < 0:
-         signum = -1
-     else:
-         signum = 1
-     if abs(value) < percentage:
-         return 0
-     else:
-         # shift the value to move the theshold value to 0
-         shifted_value = value - (signum * percentage)
-         # scale the value so it fills the interval between
-         # the threshold and 1 or -1
-         shift_and_scaled = shifted_value / ( 1 - percentage )
-         return shift_and_scaled
 
+def is_in_deadzone(radius, location):
+    (x,y) = location
+    """
+    #if in the function is in deadzone it will return true.
+    #if the function is outside of the deadzone the function will return false.
+    """
+    return(x**2+y**2) <= (radius**2)
+    
+    
+def deadzone(radius, location):
+    """
+    # if in the deazone this function will return 0,0.
+    """
+    (x,y) = location
+    if is_in_deadzone(radius, location):
+      
+        return(0,0)
+    elif location[1] == 0:
+        """
+        # if x is zero this function will just y without mutiplying or divideing by 0.
+        """
+        if x < 0:
+            nx = (x + radius)/(1-radius)
+        else:   
+            nx = (x - radius)/(1 - radius)
+        nx = round(nx, 2)
+        return(nx,0)
+        # convert on axis
+
+        
+    else:
+        """
+        # Rescales the x and the y values for the deadzone.
+        will turn the x and y to polar cordinates and rescale then then turn them back into the rescaled cartesian coordinates.
+        """
+        i = (x**2+y**2)
+        r = (math.sqrt(i))
+        theta = (math.atan(x/y))
+        k =(r-radius)/(1-radius)
+        nx = (r*math.cos(theta))
+        nx = round(nx, 2)
+        ny = (r*math.sin(theta))
+        ny = round(ny, 2)
+        return(nx,ny)
 
 if __name__ == "__main__":
 	wpilib.run(Robot, physics_enabled = True)
